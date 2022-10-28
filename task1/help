@@ -1,0 +1,13 @@
+--help
+--password [password]
+--change-password [new_password]  
+--print                           Print files for security
+--add                             Add new files
+--remove
+--start
+--stop
+
+To-do:
+-Make clean
+-md5
+ 
