@@ -1,11 +1,14 @@
---help
---password [password]
---change-password [new_password]  
---print                           Print files for security
---add                             Add new files
---remove
---start
---stop
+--help or -h
+--password or -p [password]
+--new-password or -n [new_password]  
+--print or -w                           Print files for security
+//--add                             Add new files
+//--remove
+--start or -s
+--stop or -o
+
+Usage: seq_lab [options]
+-h\t\tDisplay command line options.\n-p <password>\tEnter password.\n-n <new_password>\tChange password.\n-s\t\tStart protection.\n-o\t\tStop protection.\n-w\t\tPrint files for protection.\n
 
 To-do:
 -Make clean
