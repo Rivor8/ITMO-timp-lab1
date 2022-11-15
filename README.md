@@ -7,3 +7,15 @@
 Задание 1(б): Веб-скрипт
 
 Реализовать скрипт, внедряемый в код HTML-документа, который реализует защиту от копирования в буфер (нет возможности выделять содержимое, копировать в буфер как текст или через скриншот и т.д.) и сохранения всех страниц, вызываемых с текущей. При этом печать этих страниц на бумажный носитель должна быть доступна. Отключение скрипта должно происходить с использованием пароля, хранящегося в теле скрипта в зашифрованном виде.
+
+
+Для задания 1:
+Usage: sudo seq_lab [options]
+
+  -h            Display command line options.
+  -p <password> Enter password.
+  -r <password> Remove all data and change password.
+  -s            Start protection.
+  -o            Stop protection.
+  -w            Print files for protection.
+  -a <file>     Add files for protection.

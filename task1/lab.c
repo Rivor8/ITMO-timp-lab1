@@ -12,23 +12,9 @@
 
 int main (int argc, char **argv) {
     if (argc < 2) {
-        printf("Use 'seq_lab -h to display command line options.\n\n");
+        printf("Use 'seq_lab -h' to display command line options.\n\n");
         return 0;
     }
-
-    FILE *tm = fopen("./template.tbl", "r");
-    if (!tm) {
-        fprintf(stderr, "ERROR: problem with template.tbl\nUsage: sudo seq_lab [options]\n\n");
-        return 0;
-    }
-
-    // struct stat tm_stat;
-    // int dis_tmplt = open("./template.tbl", O_RDONLY);
-    // fstat(dis_tmplt, &tm_stat);
-    // int tm_size = tm_stat.st_size;
-    // close(dis_tmplt);
-
-    // char *buff = calloc(sizeof(char), tm_size);
 
     char buff[512];
     glob_t globbuf;
@@ -36,75 +22,135 @@ int main (int argc, char **argv) {
     int opt;
     bool pass = false;
 
-    while((opt = getopt(argc, argv, "hp:r:sow")) != -1) {
+    // Обрабатываем опции
+    while((opt = getopt(argc, argv, "hp:r:sowa:")) != -1) {
         switch (opt)
         {
-        case 'h':
+        case 'h': // Вывод справки
             printf("Usage: sudo seq_lab [options]\n\n");
-            printf("  -h\t\tDisplay command line options.\n  -p <password>\tEnter password.\n  -r <password>\tRemove all data and change password.\n  -s\t\tStart protection.\n  -o\t\tStop protection.\n  -w\t\tPrint files for protection.\n\n");
-            goto END;
-        case 'p':
-            if (!fscanf(tm, "%s", buff)) {
+            printf("  -h\t\tDisplay command line options.\n  -p <password>\tEnter password.\n  -r <password>\tRemove all data and change password.\n  -s\t\tStart protection.\n  -o\t\tStop protection.\n  -w\t\tPrint files for protection.\n  -a <file>\tAdd files for protection.\n\n");
+            return 0;
+        case 'p': ;// Ввод пароля для работы с программой
+            // Открываем файл temlate.tbl для чтения
+            FILE *tm = fopen("./template.tbl", "r");
+            if (!tm) {
+                fprintf(stderr, "ERROR: problem with template.tbl\nUsage: sudo seq_lab [options]\n\n");
+                return 0;
+            }
+
+            if (!fscanf(tm, "%s", buff)) { // Читаем первую строчку (хэш пароля)
                 fprintf(stderr, "ERROR: problem with data in template.tbl\n\n");
-                goto END;
+                return 0;
             }
             uint8_t *p;
             char arg_pass[128];
-            p = md5String(optarg);
+            p = md5String(optarg); // Получаем хэш пароля из опции 
             for(unsigned int i = 0; i < 16; ++i){
 		        sprintf(arg_pass + i * 2, "%02x", p[i]);
 	        }
             
-            pass = !strcmp(arg_pass, buff);
-
+            pass = !strcmp(arg_pass, buff); // Сравниваем с хэшем из файла
             if (!pass) {
                 fprintf(stderr, "ERROR: wrong password.\n\n");
-                goto END;
+                return 0;
             }
+
             int tmp = 0;
-            while (!feof(tm)) {
+            while (!feof(tm)) { // Читаем построчно имена и маски файлов
                 if (!fscanf(tm, "%s", buff)) {
                     fprintf(stderr, "ERROR: problem with data in template.tbl\n\n");
-                    goto END;
+                    return 0;
                 }
                 
+                // Находим файлы по заданным именам и маскам
                 if (tmp) glob(buff, GLOB_APPEND, NULL, &globbuf);
                 else {
                     glob(buff, 0, NULL, &globbuf);
                     tmp++;
                 }
             }
+
+            fclose(tm);
             break;
             
         case 'r':
             if (pass) {
-                // do something
+                // Открываем файл temlate.tbl для записи
+                FILE *tm = fopen("./template.tbl", "w");
+                if (!tm) {
+                    fprintf(stderr, "ERROR: problem with template.tbl\nUsage: sudo seq_lab [options]\n\n");
+                    return 0;
+                }
+
+                uint8_t *p;
+                p = md5String(optarg); // Получаем хэш пароля из опции 
+                for(unsigned int i = 0; i < 16; ++i){
+                    sprintf(arg_pass + i * 2, "%02x", p[i]);
+                }
+
+                fprintf(tm, "%s", arg_pass); // Записываем новый пароль
+                fclose(tm);
+                chmod("./template.tbl", 0);
+
+                goto END;
+
             }
             break;
         
         case 's':
             if (pass) {
-                // do something
+                for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+                    if(chmod(globbuf.gl_pathv[i], strtol("0000", 0, 8)) < 0) {
+                        fprintf(stderr, "ERROR: problem with protection.\n\n");
+                        goto END;
+                    }
+                }
             }
             break;
         
         case 'o':
             if (pass) {
-                // do something
+                for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+                    if(chmod(globbuf.gl_pathv[i], strtol("0664", 0, 8)) < 0) {
+                        fprintf(stderr, "ERROR: problem with protection.\n\n");
+                        goto END;
+                    }
+                }
             }
             break;
         
-        case 'w':
+        case 'w': // Вывод имён всех файлов для защиты
             if (pass) {
                 for (size_t i = 0; i < globbuf.gl_pathc; i++)
                     printf("%s\n", globbuf.gl_pathv[i]);
             }
             break;
+            
+        case 'a':
+            if (pass) {
+                FILE *tm = fopen("./template.tbl", "a");
+                if (!tm) {
+                    fprintf(stderr, "ERROR: problem with template.tbl\nUsage: sudo seq_lab [options]\n\n");
+                    goto END;
+                }
+
+                if (optarg) {
+                    fprintf(tm, "\n%s", optarg);
+                    printf("File added\n\n");
+                }
+                else {
+                    printf("Usage: sudo seq_lab -p <password> -a <file path or mask>\n\n");
+                }
+
+                goto END;
+            }
+            break;
         }
+        
     }
 
     END:
-    fclose(tm);
+    globfree(&globbuf);
     return 0;
 }
 
