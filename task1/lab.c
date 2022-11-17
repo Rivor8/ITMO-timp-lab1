@@ -97,10 +97,10 @@ int main (int argc, char **argv) {
             }
             break;
         
-        case 's':
+        case 's': // Защита
             if (pass) {
                 for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-                    if(chmod(globbuf.gl_pathv[i], strtol("0000", 0, 8)) < 0) {
+                    if(chmod(globbuf.gl_pathv[i], strtol("0000", 0, 8)) < 0) { // Меняем права доступа
                         fprintf(stderr, "ERROR: problem with protection.\n\n");
                         goto END;
                     }
@@ -108,10 +108,10 @@ int main (int argc, char **argv) {
             }
             break;
         
-        case 'o':
+        case 'o': // Остановка защиты
             if (pass) {
                 for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-                    if(chmod(globbuf.gl_pathv[i], strtol("0664", 0, 8)) < 0) {
+                    if(chmod(globbuf.gl_pathv[i], strtol("0664", 0, 8)) < 0) { // Меняем права доступа
                         fprintf(stderr, "ERROR: problem with protection.\n\n");
                         goto END;
                     }
@@ -126,7 +126,7 @@ int main (int argc, char **argv) {
             }
             break;
             
-        case 'a':
+        case 'a': // Добавление имён файлов и масок в template.tbl
             if (pass) {
                 FILE *tm = fopen("./template.tbl", "a");
                 if (!tm) {
