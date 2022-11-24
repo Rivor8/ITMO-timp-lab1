@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <glob.h>
@@ -75,6 +76,8 @@ int main (int argc, char **argv) {
             
         case 'r':
             if (pass) {
+                system("chattr -i ./template.tbl");
+
                 // Открываем файл temlate.tbl для записи
                 FILE *tm = fopen("./template.tbl", "w");
                 if (!tm) {
@@ -90,7 +93,9 @@ int main (int argc, char **argv) {
 
                 fprintf(tm, "%s", arg_pass); // Записываем новый пароль
                 fclose(tm);
+
                 chmod("./template.tbl", 0);
+                system("chattr +i ./template.tbl");
 
                 goto END;
 
@@ -104,6 +109,12 @@ int main (int argc, char **argv) {
                         fprintf(stderr, "ERROR: problem with protection.\n\n");
                         goto END;
                     }
+
+                    char *fpath; 
+                    fpath = calloc(globbuf.gl_pathc + 30, sizeof(char));
+                    sprintf(fpath, "chattr +i %s", globbuf.gl_pathv[i]);
+                    system(fpath);
+                    free(fpath);
                 }
             }
             break;
@@ -111,6 +122,12 @@ int main (int argc, char **argv) {
         case 'o': // Остановка защиты
             if (pass) {
                 for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+                    char *fpath; 
+                    fpath = calloc(globbuf.gl_pathc + 30, sizeof(char));
+                    sprintf(fpath, "chattr -i %s", globbuf.gl_pathv[i]);
+                    system(fpath);
+                    free(fpath);
+
                     if(chmod(globbuf.gl_pathv[i], strtol("0664", 0, 8)) < 0) { // Меняем права доступа
                         fprintf(stderr, "ERROR: problem with protection.\n\n");
                         goto END;
@@ -128,6 +145,7 @@ int main (int argc, char **argv) {
             
         case 'a': // Добавление имён файлов и масок в template.tbl
             if (pass) {
+                system("chattr -i ./template.tbl");
                 FILE *tm = fopen("./template.tbl", "a");
                 if (!tm) {
                     fprintf(stderr, "ERROR: problem with template.tbl\nUsage: sudo seq_lab [options]\n\n");
@@ -141,6 +159,8 @@ int main (int argc, char **argv) {
                 else {
                     printf("Usage: sudo seq_lab -p <password> -a <file path or mask>\n\n");
                 }
+                fclose(tm);
+                system("chattr +i ./template.tbl");
 
                 goto END;
             }
