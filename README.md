@@ -11,6 +11,7 @@
 
 
 ## Для задания 1:
+```
 Usage: sudo seq_lab [options]
 
   -h            Display command line options.
@@ -20,17 +21,19 @@ Usage: sudo seq_lab [options]
   -o            Stop protection.
   -w            Print files for protection.
   -a <file>     Add files for protection.
-
+```
 
 ## Для задания 2:
 Для защиты страницы следует добавить скрипт с помощью:
 
-'''<script src="md5.js"></script>
+```
+<script src="md5.js"></script>
 <script src="script.js"></script>
-'''
+```
 
 Для добавления на страницу поля ввода пароля и кнопки снятия пароля:
 
-'''<input type="password" id="pass">
+```
+<input type="password" id="pass">
 <input type="button" value="Отключить защиту" id="unlock_btn" onclick="unlock()">
-'''
+```
